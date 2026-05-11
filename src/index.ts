@@ -24,9 +24,10 @@ program
   .option('-j, --judge <provider>', 'judge LLM provider: claude|openai', 'claude')
   .option('-o, --output <dir>', 'output directory for reports', './rag-eval-output')
   .option('--threshold <number>', 'min score to exit 0 (0-1)', '0.7')
-  .action(async (opts: Record<string, string>) => {
-    console.log('[rag-eval] run command stub —', opts);
-    console.log('Logic will be implemented in FASE 2.');
+  .action(async (opts) => {
+    const { runCommand } = await import('./commands/run.js');
+    const code = await runCommand(opts as Parameters<typeof runCommand>[0]);
+    process.exit(code);
   });
 
 program.parse();
