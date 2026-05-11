@@ -1,0 +1,12 @@
+src/
+tests/
+examples/
+*.ts
+!dist/*.d.ts
+tsconfig.json
+tsup.config.ts
+.eslintrc.cjs
+.prettierrc
+.github/
+CLAUDE.md
+.claude/

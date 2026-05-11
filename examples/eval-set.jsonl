@@ -1,0 +1,3 @@
+{"id":"q1","question":"What is the capital of France?","expected_source":"world-facts-001","expected_answer":"Paris."}
+{"id":"q2","question":"Who wrote 'The Pragmatic Programmer'?","expected_source":"books-tech-042","expected_answer":"Andrew Hunt and David Thomas."}
+{"id":"q3","question":"What does HTTP stand for?","expected_source":"web-basics-007","expected_answer":"HyperText Transfer Protocol."}
