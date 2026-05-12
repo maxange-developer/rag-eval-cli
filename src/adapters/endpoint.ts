@@ -110,9 +110,24 @@ export async function callEndpoint(
     );
   }
 
+  let sourceContents: string[] | undefined;
+  if (config.responsePaths.sourceContents) {
+    const contentsRaw = getPath(raw, config.responsePaths.sourceContents);
+    if (Array.isArray(contentsRaw)) {
+      sourceContents = contentsRaw.map((c) => String(c));
+    } else if (typeof contentsRaw === 'string') {
+      sourceContents = [contentsRaw];
+    } else if (contentsRaw !== undefined && contentsRaw !== null) {
+      throw new EndpointError(
+        `Response path "${config.responsePaths.sourceContents}" did not resolve to array or string`,
+      );
+    }
+  }
+
   return {
     answer: answerRaw,
     sources,
+    sourceContents,
     raw,
     latencyMs: Date.now() - start,
   };

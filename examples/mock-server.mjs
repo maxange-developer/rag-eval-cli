@@ -2,11 +2,20 @@
 import http from 'node:http';
 
 const KB = {
-  'world-facts-001': 'Paris is the capital of France.',
-  'books-tech-042': 'The Pragmatic Programmer was written by Andrew Hunt and David Thomas.',
-  'web-basics-007': 'HTTP stands for HyperText Transfer Protocol.',
-  'other-001': 'Pluto is a dwarf planet.',
-  'other-002': 'The Eiffel Tower is in Paris.',
+  'docs-sso-reset':
+    "To reset SSO: Navigate to Settings, click SSO section, then click 'Reset SSO config'. Re-upload your IDP metadata XML file. Changes take effect immediately.",
+  'docs-webhooks-plans':
+    "The subscription.plan_changed webhook fires whenever a plan changes. The payload includes an 'action' field with values like 'upgrade', 'downgrade', or 'cancel'.",
+  'docs-api-limits':
+    'API rate limits: Free tier allows 100 requests per minute with a daily cap of 10000 requests. Paid tiers have higher limits.',
+  'docs-security-2fa':
+    'Two-factor authentication: Go to Account, then Security, then Two-Factor Authentication. Scan the QR code shown with any TOTP authenticator app (Google Authenticator, Authy, 1Password). Enter the 6-digit code to confirm activation.',
+  'docs-export-csv':
+    'Data export to CSV: Visit Settings, click Data Export, select CSV format, click Export. The download link will be emailed to you within 5 minutes.',
+  'docs-billing-invoices':
+    'Past invoices are available in Settings, Billing, Invoice History. Click any invoice to download as PDF.',
+  'docs-team-roles':
+    'Team roles: Owner (full access), Admin (manage settings), Member (use product), Viewer (read-only).',
 };
 
 function naiveSearch(query) {
@@ -41,7 +50,7 @@ const server = http.createServer((req, res) => {
     res.end(
       JSON.stringify({
         answer,
-        sources: top.map((t) => ({ id: t.id, score: t.score })),
+        sources: top.map((t) => ({ id: t.id, score: t.score, content: t.text })),
       }),
     );
   });

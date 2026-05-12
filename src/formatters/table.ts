@@ -8,17 +8,23 @@ function scoreColor(score: number): (s: string) => string {
   return chalk.red;
 }
 
+function fmtScore(s: number | undefined): string {
+  if (s === undefined || isNaN(s)) return chalk.gray('—');
+  return scoreColor(s)(s.toFixed(2));
+}
+
 export function renderTable(results: QuestionResult[]): string {
   const table = new Table({
     head: [
       chalk.bold('ID'),
       chalk.bold('Question'),
-      chalk.bold('Retrieved'),
-      chalk.bold('Precision'),
-      chalk.bold('Latency'),
+      chalk.bold('Retr'),
+      chalk.bold('Faith'),
+      chalk.bold('Corr'),
+      chalk.bold('Score'),
       chalk.bold('Status'),
     ],
-    colWidths: [12, 40, 10, 12, 10, 30],
+    colWidths: [10, 32, 8, 8, 8, 8, 20],
     wordWrap: true,
   });
 
@@ -26,25 +32,26 @@ export function renderTable(results: QuestionResult[]): string {
     if (r.error) {
       table.push([
         r.entry.id,
-        r.entry.question.slice(0, 38),
+        r.entry.question.slice(0, 30),
         chalk.gray('—'),
         chalk.gray('—'),
         chalk.gray('—'),
-        chalk.red(r.error.slice(0, 28)),
+        chalk.gray('—'),
+        chalk.red(r.error.slice(0, 18)),
       ]);
       continue;
     }
 
     const ret = r.retrieval!;
-    const found = ret.found ? chalk.green('✓') : chalk.red('✗');
-    const precColor = scoreColor(ret.precision);
+    const j = r.judge;
 
     table.push([
       r.entry.id,
-      r.entry.question.slice(0, 38),
-      found,
-      precColor(ret.precision.toFixed(2)),
-      `${r.response!.latencyMs}ms`,
+      r.entry.question.slice(0, 30),
+      ret.found ? chalk.green('✓') : chalk.red('✗'),
+      fmtScore(j?.faithfulness),
+      fmtScore(j?.correctness),
+      scoreColor(r.overallScore)(r.overallScore.toFixed(2)),
       chalk.green('ok'),
     ]);
   }
@@ -65,6 +72,8 @@ export function renderSummary(summary: RunSummary, threshold: number): string {
   lines.push(
     `Avg retrieval precision: ${scoreColor(summary.avgRetrievalPrecision)(summary.avgRetrievalPrecision.toFixed(3))}`,
   );
+  lines.push(`Avg faithfulness:        ${fmtScore(summary.avgFaithfulness)}`);
+  lines.push(`Avg correctness:         ${fmtScore(summary.avgCorrectness)}`);
   lines.push(
     `Avg overall score:       ${scoreColor(summary.avgOverallScore)(summary.avgOverallScore.toFixed(3))}`,
   );

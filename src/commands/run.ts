@@ -1,12 +1,16 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import chalk from 'chalk';
 import { loadConfig, loadEvalSet, ConfigError } from '../config/loader.js';
 import { runEval } from '../core/runner.js';
 import { renderTable, renderSummary } from '../formatters/table.js';
+import { renderCSV } from '../formatters/csv.js';
+import { renderJSON } from '../formatters/json.js';
 
 export interface RunCommandOptions {
   config: string;
   questions?: string;
-  judge?: string;
+  judge?: string | false;
   output: string;
   threshold: string;
 }
@@ -23,14 +27,46 @@ export async function runCommand(opts: RunCommandOptions): Promise<number> {
       return 2;
     }
 
+    const enableJudge = opts.judge !== false;
+    if (enableJudge && typeof opts.judge === 'string' && config.judge) {
+      if (opts.judge !== 'claude' && opts.judge !== 'openai') {
+        console.error(chalk.red(`Invalid --judge value: "${opts.judge}" (use claude|openai)`));
+        return 2;
+      }
+      config.judge = {
+        provider: opts.judge,
+        model: opts.judge === 'openai' ? 'gpt-4o-mini' : 'claude-sonnet-4-6',
+      };
+    }
+
     console.log(chalk.gray(`Loaded ${entries.length} questions from ${questionsPath}`));
     console.log(chalk.gray(`Endpoint: ${config.endpoint.url}`));
+    if (enableJudge && config.judge) {
+      console.log(chalk.gray(`Judge: ${config.judge.provider} (${config.judge.model})`));
+    } else {
+      console.log(chalk.gray('Judge: disabled (retrieval-only)'));
+    }
     console.log('');
 
-    const { results, summary } = await runEval({ config, entries, threshold });
+    const { results, summary } = await runEval({ config, entries, threshold, enableJudge });
 
     console.log(renderTable(results));
     console.log(renderSummary(summary, threshold));
+
+    try {
+      mkdirSync(opts.output, { recursive: true });
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+      const csvPath = join(opts.output, `eval-${timestamp}.csv`);
+      writeFileSync(csvPath, renderCSV(results, summary));
+      console.log(chalk.gray(`CSV report:  ${csvPath}`));
+
+      const jsonPath = join(opts.output, `eval-${timestamp}.json`);
+      writeFileSync(jsonPath, JSON.stringify(renderJSON(results, summary), null, 2));
+      console.log(chalk.gray(`JSON report: ${jsonPath}`));
+    } catch (e) {
+      console.error(chalk.yellow(`Warning: failed to write reports: ${(e as Error).message}`));
+    }
 
     return summary.passed ? 0 : 1;
   } catch (e) {

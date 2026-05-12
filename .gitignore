@@ -6,3 +6,6 @@ dist/
 .DS_Store
 coverage/
 .eval-cache/
+
+# Default rag-eval output directory
+rag-eval-output/

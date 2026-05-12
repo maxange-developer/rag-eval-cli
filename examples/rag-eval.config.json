@@ -11,7 +11,8 @@
     },
     "responsePaths": {
       "answer": "answer",
-      "sources": "sources[].id"
+      "sources": "sources[].id",
+      "sourceContents": "sources[].content"
     }
   },
   "judge": {

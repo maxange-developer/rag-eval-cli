@@ -32,18 +32,36 @@ export function scoreRetrieval(
   };
 }
 
+function isValidScore(n: number | undefined): n is number {
+  return typeof n === 'number' && !isNaN(n);
+}
+
 export function computeOverallScore(
   retrieval: RetrievalScore | null,
   judge: JudgeResult | null,
   weights: ScoringConfig['weights'],
 ): number {
-  if (!judge || (judge.faithfulness === undefined && judge.correctness === undefined)) {
-    return retrieval ? (retrieval.found ? 1 : retrieval.precision) : 0;
+  const r = retrieval ? (retrieval.found ? 1 : retrieval.precision) : 0;
+
+  if (!judge) return r;
+
+  const hasFaith = isValidScore(judge.faithfulness);
+  const hasCorr = isValidScore(judge.correctness);
+
+  if (!hasFaith && !hasCorr) return r;
+
+  // Re-normalize weights to skip NaN dimensions
+  let totalWeight = weights.retrieval;
+  let weightedSum = r * weights.retrieval;
+
+  if (hasFaith) {
+    weightedSum += (judge.faithfulness as number) * weights.faithfulness;
+    totalWeight += weights.faithfulness;
+  }
+  if (hasCorr) {
+    weightedSum += (judge.correctness as number) * weights.correctness;
+    totalWeight += weights.correctness;
   }
 
-  const r = retrieval ? (retrieval.found ? 1 : retrieval.precision) : 0;
-  const f = judge.faithfulness ?? 0;
-  const c = judge.correctness ?? 0;
-
-  return r * weights.retrieval + f * weights.faithfulness + c * weights.correctness;
+  return totalWeight > 0 ? weightedSum / totalWeight : r;
 }

@@ -1,0 +1,5 @@
+{"id":"q1","question":"How do I reset my SSO configuration?","expected_source":"docs-sso-reset","expected_answer":"Navigate to Settings → SSO → click 'Reset SSO config', then re-upload your IDP metadata XML."}
+{"id":"q2","question":"Which webhook fires when a plan is downgraded?","expected_source":"docs-webhooks-plans","expected_answer":"The subscription.plan_changed webhook fires with action='downgrade' in the payload."}
+{"id":"q3","question":"What's the rate limit for API requests on the free tier?","expected_source":"docs-api-limits","expected_answer":"Free tier allows 100 requests per minute, with a daily cap of 10000 requests."}
+{"id":"q4","question":"How do I enable two-factor authentication?","expected_source":"docs-security-2fa","expected_answer":"Go to Account → Security → Two-Factor Authentication, scan the QR code with your authenticator app, then enter the 6-digit code to confirm."}
+{"id":"q5","question":"Can I export my data to CSV?","expected_source":"docs-export-csv","expected_answer":"Yes. Settings → Data Export → choose CSV format → download will be emailed within 5 minutes."}

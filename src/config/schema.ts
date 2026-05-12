@@ -16,17 +16,33 @@ export const EndpointConfigSchema = z.object({
   responsePaths: z.object({
     answer: z.string(),
     sources: z.string(),
+    sourceContents: z.string().optional(),
   }),
   timeoutMs: z.number().int().positive().default(30000),
 });
 export type EndpointConfig = z.infer<typeof EndpointConfigSchema>;
 
-export const JudgeConfigSchema = z.object({
-  provider: z.enum(['claude', 'openai']).default('claude'),
-  model: z.string().default('claude-sonnet-4-6'),
-  apiKeyEnv: z.string().default('ANTHROPIC_API_KEY'),
-});
+export const JudgeConfigSchema = z
+  .object({
+    provider: z.enum(['claude', 'openai']).default('claude'),
+    model: z.string().optional(),
+  })
+  .transform((data) => {
+    const defaultModel =
+      data.provider === 'openai' ? 'gpt-4o-mini' : 'claude-sonnet-4-6';
+    return {
+      provider: data.provider,
+      model: data.model ?? defaultModel,
+    };
+  });
 export type JudgeConfig = z.infer<typeof JudgeConfigSchema>;
+
+export const JudgeOutputJSONSchema = z.object({
+  faithfulness: z.union([z.number().min(0).max(1), z.null()]),
+  correctness: z.union([z.number().min(0).max(1), z.null()]),
+  rationale: z.string().min(1).max(2000),
+});
+export type JudgeOutputJSON = z.infer<typeof JudgeOutputJSONSchema>;
 
 export const ScoringConfigSchema = z.object({
   retrievalK: z.number().int().positive().default(5),
@@ -56,6 +72,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 export interface EndpointResponse {
   answer: string;
   sources: string[];
+  sourceContents?: string[];
   raw: unknown;
   latencyMs: number;
 }
@@ -87,6 +104,8 @@ export interface RunSummary {
   successful: number;
   failed: number;
   avgRetrievalPrecision: number;
+  avgFaithfulness: number;
+  avgCorrectness: number;
   avgOverallScore: number;
   passed: boolean;
   durationMs: number;

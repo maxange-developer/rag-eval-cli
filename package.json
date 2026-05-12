@@ -1,16 +1,22 @@
 {
   "name": "@massiangelone/rag-eval",
   "version": "0.1.0-alpha.0",
-  "description": "Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Zero-config CLI.",
+  "description": "Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Multi-provider judge (Claude/OpenAI). Zero-config CLI.",
   "keywords": [
     "rag",
     "llm",
     "eval",
     "evaluation",
     "retrieval",
+    "faithfulness",
+    "correctness",
     "anthropic",
+    "claude",
     "openai",
-    "cli"
+    "gpt",
+    "cli",
+    "ci",
+    "testing"
   ],
   "license": "MIT",
   "author": "Massimiliano Angelone <massiangelone01@gmail.com>",

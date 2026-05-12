@@ -21,7 +21,8 @@ program
   .description('Run evaluation against a RAG endpoint')
   .option('-c, --config <path>', 'config file path', 'rag-eval.config.json')
   .option('-q, --questions <path>', 'eval-set JSONL file')
-  .option('-j, --judge <provider>', 'judge LLM provider: claude|openai', 'claude')
+  .option('-j, --judge <provider>', 'judge LLM provider: claude|openai (overrides config)')
+  .option('--no-judge', 'skip judge LLM (retrieval scoring only, no API costs)')
   .option('-o, --output <dir>', 'output directory for reports', './rag-eval-output')
   .option('--threshold <number>', 'min score to exit 0 (0-1)', '0.7')
   .action(async (opts) => {
