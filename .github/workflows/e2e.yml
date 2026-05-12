@@ -1,0 +1,94 @@
+name: E2E smoke test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Pack tarball
+        id: pack
+        run: |
+          TARBALL=$(npm pack --silent)
+          echo "tarball=$PWD/$TARBALL" >> $GITHUB_OUTPUT
+
+      - name: Install CLI globally from tarball
+        run: npm install -g ${{ steps.pack.outputs.tarball }}
+
+      - name: Verify binary is on PATH
+        run: angel1-rag-eval --version
+
+      - name: Start mock RAG server in background
+        run: |
+          node examples/mock-server.mjs &
+          echo $! > /tmp/mock.pid
+          sleep 2
+          curl -sf -X POST http://localhost:3000/api/rag \
+            -H "Content-Type: application/json" \
+            -d '{"query":"test"}' > /dev/null || (echo "Mock server not responding" && exit 1)
+
+      - name: Run E2E eval (no judge, offline)
+        run: |
+          angel1-rag-eval run \
+            -c examples/rag-eval.config.json \
+            -q examples/eval-set.example.jsonl \
+            --threshold 0.3 \
+            --no-judge \
+            -o /tmp/e2e-output
+
+      - name: Verify outputs generated
+        run: |
+          ls -la /tmp/e2e-output/
+          CSV_COUNT=$(ls /tmp/e2e-output/*.csv 2>/dev/null | wc -l)
+          JSON_COUNT=$(ls /tmp/e2e-output/*.json 2>/dev/null | wc -l)
+          if [ "$CSV_COUNT" -lt 1 ]; then
+            echo "CSV output not generated"
+            exit 1
+          fi
+          if [ "$JSON_COUNT" -lt 1 ]; then
+            echo "JSON output not generated"
+            exit 1
+          fi
+          JSON_FILE=$(ls /tmp/e2e-output/*.json | head -1)
+          node -e "
+            const data = JSON.parse(require('fs').readFileSync('$JSON_FILE'));
+            if (!data.summary || !data.results) { console.error('Invalid JSON shape'); process.exit(1); }
+            if (data.results.length !== 5) { console.error('Expected 5 results, got ' + data.results.length); process.exit(1); }
+            console.log('JSON structure OK, ' + data.results.length + ' results');
+          "
+
+      - name: Stop mock server
+        if: always()
+        run: |
+          if [ -f /tmp/mock.pid ]; then
+            kill $(cat /tmp/mock.pid) 2>/dev/null || true
+          fi

@@ -12,7 +12,7 @@ const pkg = JSON.parse(
 const program = new Command();
 
 program
-  .name('rag-eval')
+  .name('angel1-rag-eval')
   .description('Evaluate RAG pipelines: retrieval, faithfulness, correctness.')
   .version(pkg.version);
 
@@ -25,6 +25,7 @@ program
   .option('--no-judge', 'skip judge LLM (retrieval scoring only, no API costs)')
   .option('-o, --output <dir>', 'output directory for reports', './rag-eval-output')
   .option('--threshold <number>', 'min score to exit 0 (0-1)', '0.7')
+  .option('-v, --verbose', 'print judge rationale for each question after summary')
   .action(async (opts) => {
     const { runCommand } = await import('./commands/run.js');
     const code = await runCommand(opts as Parameters<typeof runCommand>[0]);

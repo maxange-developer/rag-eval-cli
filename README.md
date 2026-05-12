@@ -1,46 +1,40 @@
-# @massiangelone/rag-eval
+# @massiangelone/angel1-rag-eval
 
-[![npm](https://img.shields.io/npm/v/@massiangelone/rag-eval.svg)](https://www.npmjs.com/package/@massiangelone/rag-eval)
+[![npm](https://img.shields.io/npm/v/@massiangelone/angel1-rag-eval.svg)](https://www.npmjs.com/package/@massiangelone/angel1-rag-eval)
 [![CI](https://github.com/maxange-developer/rag-eval-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/maxange-developer/rag-eval-cli/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Zero-config CLI.
+> Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Multi-provider judge LLM (Claude / OpenAI). Zero-config CLI.
 
-Building a RAG system is easy. Knowing if it's any good is hard. `rag-eval` runs your RAG endpoint against a labeled eval-set and reports three numbers:
+Part of the `angel1-*` toolkit series.
+
+Building a RAG system is easy. Knowing if it's any good is hard. `angel1-rag-eval` runs your RAG endpoint against a labeled eval-set and reports three numbers:
 
 - **Retrieval precision** — did your retriever find the right documents?
 - **Faithfulness** — is the generated answer supported by retrieved context?
 - **Correctness** — does the answer match the expected ground truth?
 
-Extracted from production work on multi-tenant RAG SaaS. Built provider-agnostic: judge with Claude or OpenAI.
-
-> **Status: alpha (v0.1.0).** Config shape may change before v1.0. CLI command surface is stable.
-
-## Install
-
-```bash
-npx @massiangelone/rag-eval --help
-```
-
-Or globally:
-
-```bash
-npm install -g @massiangelone/rag-eval
-rag-eval --help
-```
+Extracted from production work on multi-tenant RAG SaaS.
 
 ## Quickstart
 
-### 1. Create your eval-set (JSONL)
+```bash
+npx @massiangelone/angel1-rag-eval --help
+```
 
-Each line is one question with expected source ID and optional expected answer.
+Or install globally:
+
+```bash
+npm install -g @massiangelone/angel1-rag-eval
+angel1-rag-eval --help
+```
+
+### 1. Create your eval-set (JSONL)
 
 ```jsonl
 {"id":"q1","question":"How do I reset SSO?","expected_source":"docs-sso-reset","expected_answer":"Settings → SSO → Reset"}
 {"id":"q2","question":"Which webhook fires on downgrade?","expected_source":"docs-webhooks","expected_answer":"subscription.plan_changed with action=downgrade"}
 ```
-
-See [`examples/eval-set.example.jsonl`](examples/eval-set.example.jsonl) for a full B2B SaaS example.
 
 ### 2. Create config (JSON)
 
@@ -72,8 +66,6 @@ See [`examples/eval-set.example.jsonl`](examples/eval-set.example.jsonl) for a f
 }
 ```
 
-See [`examples/rag-eval.config.json`](examples/rag-eval.config.json) for the full reference config.
-
 ### 3. Set your judge API key
 
 ```bash
@@ -85,16 +77,16 @@ export OPENAI_API_KEY=sk-...
 ### 4. Run
 
 ```bash
-rag-eval run -c rag-eval.config.json -q eval-set.jsonl --threshold 0.7
+angel1-rag-eval run -c rag-eval.config.json -q eval-set.jsonl --threshold 0.7
 ```
 
-Output: colored console table, CSV file, JSON file, exit code 0/1 based on threshold.
+Output: console table, CSV file, JSON file, exit code 0/1 based on threshold.
 
 ## Configuration reference
 
 ### `endpoint`
 
-How `rag-eval` calls your RAG service.
+How `angel1-rag-eval` calls your RAG service.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -104,20 +96,25 @@ How `rag-eval` calls your RAG service.
 | `body` | object | — | Request body template. Use `{{question}}` and `{{id}}` as placeholders |
 | `responsePaths.answer` | string | — | JSON path to the generated answer |
 | `responsePaths.sources` | string | — | JSON path to retrieved source IDs (e.g. `sources[].id`) |
-| `responsePaths.sourceContents` | string | optional | JSON path to retrieved source **text**. Required for accurate faithfulness scoring. |
-| `timeoutMs` | number | `30000` | Request timeout in ms |
+| `responsePaths.sourceContents` | string | optional | JSON path to retrieved source TEXT. **Required for accurate faithfulness scoring.** |
+| `timeoutMs` | number | `30000` | Request timeout |
 
 ### Path syntax
 
 - `a.b.c` — nested object access
-- `a[].c` — array map: returns `c` from each element of `a`
+- `a[].c` — array map: returns array of `c` from each element of `a`
 
 ### `judge`
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `provider` | `claude` \| `openai` | `claude` | LLM judge provider |
-| `model` | string | provider-aware | Specific model. Defaults: `claude-sonnet-4-6` or `gpt-4o-mini` |
+| `model` | string | provider-aware | Specific model |
+
+| Provider   | Default model       |
+|------------|---------------------|
+| `claude`   | claude-sonnet-4-6   |
+| `openai`   | gpt-4o-mini         |
 
 Required env vars: `ANTHROPIC_API_KEY` (claude) or `OPENAI_API_KEY` (openai).
 
@@ -139,9 +136,10 @@ Weights must sum to 1.0.
 | `-c, --config <path>` | Config file (default: `rag-eval.config.json`) |
 | `-q, --questions <path>` | Eval-set JSONL (default: `eval-set.jsonl`) |
 | `-j, --judge <provider>` | Override judge provider (`claude` \| `openai`) |
-| `--no-judge` | Skip judge LLM — retrieval scoring only, no API costs |
+| `--no-judge` | Skip judge LLM, retrieval scoring only (no API costs) |
 | `-o, --output <dir>` | Output directory (default: `./rag-eval-output`) |
 | `--threshold <number>` | Min overall score to exit 0 (default: `0.7`) |
+| `-v, --verbose` | Print judge rationale for each question after summary |
 
 ## Output
 
@@ -153,12 +151,10 @@ Three artifacts per run:
 
 Exit codes:
 
-| Code | Meaning |
-|------|---------|
-| `0` | Passed — avg overall score ≥ threshold |
-| `1` | Failed — below threshold |
-| `2` | Config / eval-set validation error |
-| `3` | Unexpected error |
+- `0` — passed (avg overall score ≥ threshold)
+- `1` — failed (below threshold)
+- `2` — config / eval-set validation error
+- `3` — unexpected error
 
 ## CI integration
 
@@ -168,9 +164,7 @@ Exit codes:
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   run: |
-    npx @massiangelone/rag-eval run \
-      -c rag-eval.config.json \
-      -q eval-set.jsonl \
+    npx @massiangelone/angel1-rag-eval run \
       --threshold 0.75
 ```
 
@@ -178,27 +172,41 @@ Fails the build if RAG quality regresses below threshold.
 
 ## Faithfulness scoring requires source text
 
-For meaningful faithfulness scoring, your RAG endpoint must return the **text** of retrieved chunks, not just IDs. Configure `responsePaths.sourceContents` to point at the chunk text in your response.
+For meaningful faithfulness scoring, your RAG endpoint must return the **text** of retrieved chunks, not just IDs. Configure `responsePaths.sourceContents` to point at the text in your response.
 
-Without `sourceContents`, the judge detects that context items are opaque IDs and returns `null` for faithfulness. The overall score weight re-normalizes across retrieval and correctness only — no artificial penalty.
+Without `sourceContents`, the judge cannot assess faithfulness — it will return `null` for that dimension, and the overall score weight will redistribute to retrieval and correctness.
 
-## Test the CLI locally
+## API stability
 
-A mock RAG server and example eval-set are included:
+Stable in v1.x (won't change without major version bump):
+
+- `run` command surface
+- Flags: `--config`, `--questions`, `--judge`, `--no-judge`, `--threshold`, `--output`, `--verbose`
+- Config shape: `endpoint`, `judge`, `scoring`
+- Exit codes 0/1/2/3
+
+Experimental (may evolve in v1.x minor):
+
+- `responsePaths.sourceContents` (added in v0.1.0-alpha)
+
+## Migration from `@massiangelone/rag-eval`
+
+This package was previously published as `@massiangelone/rag-eval`. The old package is deprecated and points here. No code changes are required for existing configs — only the install/invocation command changes:
 
 ```bash
-node examples/mock-server.mjs &
-rag-eval run \
-  -c examples/rag-eval.config.json \
-  -q examples/eval-set.example.jsonl \
-  --judge openai \
-  --threshold 0.7
+# Before
+npx @massiangelone/rag-eval run -c config.json -q eval.jsonl
+
+# After
+npx @massiangelone/angel1-rag-eval run -c config.json -q eval.jsonl
 ```
 
 ## Status
 
+Stable (v1.0.0).
+
 - **OpenAI judge**: tested end-to-end against the real API
-- **Claude judge**: implemented and structurally validated; full end-to-end testing pending Anthropic API credit
+- **Claude judge**: implemented and structurally validated; full end-to-end testing pending
 - **Retrieval scoring**: tested with mock and real endpoints
 - **CSV/JSON output**: tested
 

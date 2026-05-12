@@ -1,8 +1,9 @@
 {
-  "name": "@massiangelone/rag-eval",
-  "version": "0.1.0-alpha.0",
+  "name": "@massiangelone/angel1-rag-eval",
+  "version": "1.0.0",
   "description": "Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Multi-provider judge (Claude/OpenAI). Zero-config CLI.",
   "keywords": [
+    "angel1",
     "rag",
     "llm",
     "eval",
@@ -30,7 +31,7 @@
   },
   "type": "module",
   "bin": {
-    "rag-eval": "./dist/index.js"
+    "angel1-rag-eval": "./dist/index.js"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -38,7 +39,8 @@
   "files": [
     "dist/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsup",

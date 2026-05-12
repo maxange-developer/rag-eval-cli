@@ -1,4 +1,4 @@
-# rag-eval-cli — Claude Code working notes
+# angel1-rag-eval — Claude Code working notes
 
 ## Project
 CLI tool that evaluates RAG pipelines. Three scores:

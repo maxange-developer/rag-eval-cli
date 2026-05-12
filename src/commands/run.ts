@@ -13,6 +13,7 @@ export interface RunCommandOptions {
   judge?: string | false;
   output: string;
   threshold: string;
+  verbose?: boolean;
 }
 
 export async function runCommand(opts: RunCommandOptions): Promise<number> {
@@ -52,6 +53,37 @@ export async function runCommand(opts: RunCommandOptions): Promise<number> {
 
     console.log(renderTable(results));
     console.log(renderSummary(summary, threshold));
+
+    if (opts.verbose) {
+      console.log('');
+      console.log(chalk.bold('Verbose: judge rationales'));
+      console.log(chalk.gray('─'.repeat(60)));
+
+      for (const r of results) {
+        if (r.error) {
+          console.log(`\n${chalk.bold(r.entry.id)} — ${chalk.red('ERROR')}`);
+          console.log(chalk.gray(r.error));
+          continue;
+        }
+
+        console.log(
+          `\n${chalk.bold(r.entry.id)} — ${chalk.gray(r.entry.question.slice(0, 60))}`,
+        );
+
+        if (r.judge) {
+          if (r.judge.faithfulness !== undefined && !isNaN(r.judge.faithfulness)) {
+            console.log(`  ${chalk.gray('faith:')} ${r.judge.faithfulness.toFixed(2)}`);
+          }
+          if (r.judge.correctness !== undefined && !isNaN(r.judge.correctness)) {
+            console.log(`  ${chalk.gray('corr: ')} ${r.judge.correctness.toFixed(2)}`);
+          }
+          console.log(`  ${chalk.gray('rationale:')} ${r.judge.rationale ?? '(none)'}`);
+        } else {
+          console.log(chalk.gray('  (judge skipped or unavailable)'));
+        }
+      }
+      console.log('');
+    }
 
     try {
       mkdirSync(opts.output, { recursive: true });
