@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/maxange-developer/rag-eval-cli/main/schema.json",
+  "$schema": "https://raw.githubusercontent.com/maxange-developer/angel1-rag-eval/main/schema.json",
   "endpoint": {
     "url": "http://localhost:3000/api/rag",
     "method": "POST",

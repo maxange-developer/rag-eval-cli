@@ -21,13 +21,13 @@
   ],
   "license": "MIT",
   "author": "Massimiliano Angelone <massiangelone01@gmail.com>",
-  "homepage": "https://github.com/maxange-developer/rag-eval-cli#readme",
+  "homepage": "https://github.com/maxange-developer/angel1-rag-eval#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/maxange-developer/rag-eval-cli.git"
+    "url": "git+https://github.com/maxange-developer/angel1-rag-eval.git"
   },
   "bugs": {
-    "url": "https://github.com/maxange-developer/rag-eval-cli/issues"
+    "url": "https://github.com/maxange-developer/angel1-rag-eval/issues"
   },
   "type": "module",
   "bin": {

@@ -1,7 +1,7 @@
 # @massiangelone/angel1-rag-eval
 
 [![npm](https://img.shields.io/npm/v/@massiangelone/angel1-rag-eval.svg)](https://www.npmjs.com/package/@massiangelone/angel1-rag-eval)
-[![CI](https://github.com/maxange-developer/rag-eval-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/maxange-developer/rag-eval-cli/actions/workflows/ci.yml)
+[![CI](https://github.com/maxange-developer/angel1-rag-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/maxange-developer/angel1-rag-eval/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Multi-provider judge LLM (Claude / OpenAI). Zero-config CLI.
@@ -189,18 +189,6 @@ Experimental (may evolve in v1.x minor):
 
 - `responsePaths.sourceContents` (added in v0.1.0-alpha)
 
-## Migration from `@massiangelone/rag-eval`
-
-This package was previously published as `@massiangelone/rag-eval`. The old package is deprecated and points here. No code changes are required for existing configs — only the install/invocation command changes:
-
-```bash
-# Before
-npx @massiangelone/rag-eval run -c config.json -q eval.jsonl
-
-# After
-npx @massiangelone/angel1-rag-eval run -c config.json -q eval.jsonl
-```
-
 ## Status
 
 Stable (v1.0.0).
@@ -213,3 +201,9 @@ Stable (v1.0.0).
 ## License
 
 MIT © Massimiliano Angelone
+
+## Related
+
+Part of the `angel1-*` series of open-source tools for AI-enhanced product development:
+
+- **[angel1-mvp-toolkit](https://github.com/maxange-developer/angel1-mvp-toolkit)** — Scaffold production-ready Next.js + Supabase apps with multi-provider AI (Claude/OpenAI) in seconds. Pairs with this tool to evaluate the RAG endpoints scaffolded by the toolkit.
