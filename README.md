@@ -1,12 +1,12 @@
-# @massiangelone/angel1-rag-eval
-
-[![npm](https://img.shields.io/npm/v/@massiangelone/angel1-rag-eval.svg)](https://www.npmjs.com/package/@massiangelone/angel1-rag-eval)
-[![CI](https://github.com/maxange-developer/angel1-rag-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/maxange-developer/angel1-rag-eval/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+# angel1-rag-eval
 
 > Evaluate RAG pipelines: retrieval precision, faithfulness, answer correctness. Multi-provider judge LLM (Claude / OpenAI). Zero-config CLI.
 
+**On npm →** [`@massiangelone/angel1-rag-eval`](https://www.npmjs.com/package/@massiangelone/angel1-rag-eval)
+
 Part of the `angel1-*` toolkit series.
+
+![angel1-rag-eval](docs/hero.webp)
 
 Building a RAG system is easy. Knowing if it's any good is hard. `angel1-rag-eval` runs your RAG endpoint against a labeled eval-set and reports three numbers:
 
@@ -15,6 +15,27 @@ Building a RAG system is easy. Knowing if it's any good is hard. `angel1-rag-eva
 - **Correctness** — does the answer match the expected ground truth?
 
 Extracted from production work on multi-tenant RAG SaaS.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A[eval-set.jsonl] --> B[CLI run]
+  C[config.json] --> B
+  B -->|HTTP POST| D[Your RAG endpoint]
+  D -->|answer + sources| B
+  B -->|score retrieval| E[Retrieval at K]
+  B -->|judge call| F[gpt-4o-mini or claude-sonnet-4-6]
+  F -->|faithfulness + correctness| B
+  E --> G[Output]
+  B --> G
+  G --> H[Console table]
+  G --> I[CSV file]
+  G --> J[JSON file]
+  G --> K[Exit code 0/1]
+```
+
+The CLI takes an eval-set (one question per line) plus a config (your endpoint + judge), calls your RAG service question by question, scores three dimensions, and writes three output artifacts plus a CI-friendly exit code.
 
 ## Quickstart
 
@@ -198,9 +219,17 @@ Stable (v1.0.0).
 - **Retrieval scoring**: tested with mock and real endpoints
 - **CSV/JSON output**: tested
 
+## Scope
+
+`angel1-rag-eval` is published on npm and runs against any RAG endpoint that conforms to the configurable response shape. It is not a benchmark — there's no canonical eval-set, bring your own. The [case study](https://massimilianoangelone.com/work/angel1-rag-eval) covers the scoring methodology and judge-LLM trade-offs end-to-end.
+
 ## License
 
-MIT © Massimiliano Angelone
+MIT.
+
+## Author
+
+Built by [Massimiliano Angelone](https://massimilianoangelone.com) — AI-Enhanced MVP Developer, Tenerife.
 
 ## Related
 
